@@ -19,6 +19,17 @@ Please provide your solution as a rails app called exercise_YYMMDD_yourname, sen
 
 ## Assumptions
 
+ - group event has:
+   - user_id
+   - name
+   - description
+   - description_type
+   - location
+   - start
+   - end
+   - duration
+   - status
+
  - For group event for any given 2 from the fields (start, end, and duration) we need to calculate the third field
  - The API have to support the following:
    - creating an event(assuming it will be always draft)
@@ -27,10 +38,11 @@ Please provide your solution as a rails app called exercise_YYMMDD_yourname, sen
    - pubishing an event + validations
    - delete event
 
-   GET /events
-   POST /events
-   GET /events/:id
-   PUT/PATCH /events/:id
-   DELETE /events/:id
+- The API has the following endpoints:
+   - [X] GET /events
+   - [X] POST /events
+   - [ ] GET /events/:id
+   - [X] PUT/PATCH /events/:id
+   - [ ] DELETE /events/:id
 
 
