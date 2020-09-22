@@ -48,11 +48,8 @@ Please provide your solution as a rails app called exercise_YYMMDD_yourname, sen
 
 ## Design decisions
 
-- The Ruby version is 2.7.1.
- - The project using pattern matching because it's elegant and this is a demo project. I would use it in production, yet.
- - I'm creating a new migrations for a DB change to show production like migration practices.
+ - The project using pattern matching because it's elegant and this is a demo project. I wouldn't use it for production platform, yet.
  - As a simpler approach I'm do not use serializer objects, but the AR models instead. For a bigger app I'd choose serializers.
-
 
 ## Setup
 
@@ -64,6 +61,8 @@ Please provide your solution as a rails app called exercise_YYMMDD_yourname, sen
 ```bash
   rbenv install
 ```
+
+*NOTE: If you don't use `rbenv` you've to install explicitly version 2.7.1*
 
 2. Install dependecies
 
