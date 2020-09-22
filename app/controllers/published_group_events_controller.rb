@@ -18,9 +18,6 @@ class PublishedGroupEventsController < ApplicationController
 
     success = event.update(status: :draft)
 
-    render json: {
-      success: success,
-      errors: publish_result.errors,
-    }
+    render json: { success: success }
   end
 end

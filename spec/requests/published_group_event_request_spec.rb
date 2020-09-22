@@ -17,10 +17,8 @@ RSpec.describe "PublishedGroupEvents", type: :request do
       post "/users/#{user.id}/group_events/#{event.id}/publish"
 
       expect(response.status).to eq(200)
-      expect(parsed_body).to eq(
-        'success' => true,
-        'errors' => [],
-      )
+      expect(parsed_body).to eq('success' => true, 'errors' => [])
+      expect(event.reload.status).to eq('published')
     end
 
     it 'returns error when the publishing fails due to blank fields' do
@@ -43,6 +41,7 @@ RSpec.describe "PublishedGroupEvents", type: :request do
           "Duration can't be blank"
         ],
       )
+      expect(event.reload.status).to eq('draft')
     end
 
     it 'returns error when the publishing fails due to event duration invalid' do
@@ -67,6 +66,30 @@ RSpec.describe "PublishedGroupEvents", type: :request do
           "End date cannot be before 'start date'",
         ],
       )
+      expect(event.reload.status).to eq('draft')
+    end
+  end
+
+  describe "DELETE users/:user_id/group_events/publish" do
+    it 'unpublishes group event successfully' do
+      user = create :user
+      event = create :group_event, user: user,
+                                   name: 'name',
+                                   start_date: Date.new(2020, 1, 1),
+                                   end_date: Date.new(2020, 1, 1),
+                                   duration: 1,
+                                   description: 'description',
+                                   description_format: 'description_format',
+                                   location: 'location',
+                                   status: :published
+
+      delete "/users/#{user.id}/group_events/#{event.id}/publish"
+
+      expect(response.status).to eq(200)
+      expect(parsed_body).to eq(
+        'success' => true,
+      )
+      expect(event.reload.status).to eq('draft')
     end
   end
 
