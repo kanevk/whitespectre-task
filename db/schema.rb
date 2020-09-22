@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_09_22_142039) do
+ActiveRecord::Schema.define(version: 2020_09_22_162734) do
 
   create_table "group_events", force: :cascade do |t|
     t.integer "user_id"
@@ -24,6 +24,7 @@ ActiveRecord::Schema.define(version: 2020_09_22_142039) do
     t.datetime "updated_at", precision: 6, null: false
     t.date "start_date"
     t.date "end_date"
+    t.datetime "deleted_at"
     t.index ["user_id"], name: "index_group_events_on_user_id"
   end
 

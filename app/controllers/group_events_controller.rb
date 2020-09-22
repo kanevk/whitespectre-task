@@ -1,5 +1,5 @@
 class GroupEventsController < ApplicationController
-  EVENT_ATTRIBUTES = %i(
+  EVENT_PERMITTED_ATTRIBUTES = %i(
     name
     status
     description
@@ -31,9 +31,7 @@ class GroupEventsController < ApplicationController
 
   def create
     user = User.find params[:user_id]
-    permitted_attributes = params.permit(EVENT_ATTRIBUTES)
-
-    event = GroupEvent.form_create(user, permitted_attributes)
+    event = GroupEventForm.create(user, permitted_params)
 
     render json: {
       data: event.as_json(as: :member)
@@ -42,12 +40,29 @@ class GroupEventsController < ApplicationController
 
   def update
     user = User.find params[:user_id]
-    permitted_attributes = params.permit(EVENT_ATTRIBUTES)
+    event = GroupEvent.find_by!(user: user, id: params[:id])
 
-    event = GroupEvent.form_update(user, params[:id], permitted_attributes)
+    updated_event = GroupEventForm.update(event, permitted_params)
 
     render json: {
-      data: event.as_json(as: :member)
+      data: updated_event.as_json(as: :member)
     }
+  end
+
+  def destroy
+    user = User.find params[:user_id]
+    event = GroupEvent.find_by!(user: user, id: params[:id])
+
+    event.update!(deleted_at: Time.current)
+
+    render json: {
+      data: event.as_json(as: :delete)
+    }
+  end
+
+  private
+
+  def permitted_params
+    params.permit(EVENT_PERMITTED_ATTRIBUTES)
   end
 end

@@ -9,7 +9,7 @@ RSpec.describe "GroupEvents", type: :request do
       get "/users/#{user.id}/group_events"
 
       expect(response.status).to eq(200)
-      expect(parsed_response).to match({
+      expect(parsed_body).to match({
         'data' => a_collection_containing_exactly({ 'id' => event.id, 'name' => 'name', 'status' => 'published' })
       })
     end
@@ -33,7 +33,7 @@ RSpec.describe "GroupEvents", type: :request do
       }
 
       expect(response.status).to eq(200)
-      expect(parsed_response).to match({
+      expect(parsed_body).to match({
         'data' => a_hash_including(
           'name' => 'name',
           'description' => 'description',
@@ -51,7 +51,7 @@ RSpec.describe "GroupEvents", type: :request do
       post "/users/#{user.id}/group_events"
 
       expect(response.status).to eq(200)
-      expect(parsed_response).to match({
+      expect(parsed_body).to match({
         'data' => hash_including({ 'status' => 'draft' })
       })
     end
@@ -79,7 +79,7 @@ RSpec.describe "GroupEvents", type: :request do
       get "/users/#{user.id}/group_events/#{event.id}"
 
       expect(response.status).to eq(200)
-      expect(parsed_response).to match({
+      expect(parsed_body).to match({
         'data' => {
           'name' => 'name',
           'description' => 'description',
@@ -120,7 +120,7 @@ RSpec.describe "GroupEvents", type: :request do
       patch "/users/#{user.id}/group_events/#{event.id}", params: updated_attributes
 
       expect(response.status).to eq(200)
-      expect(parsed_response).to match({
+      expect(parsed_body).to match({
         'data' => { 'status' => 'draft' , **updated_attributes }
       })
     end
@@ -133,7 +133,33 @@ RSpec.describe "GroupEvents", type: :request do
     end
   end
 
-  def parsed_response
+  describe 'DELETE /users/:user_id/group_events/:id' do
+    it 'deletes the group_event' do
+      travel_to DateTime.current do
+        user = create :user
+        event = create :group_event, user: user
+
+        delete "/users/#{user.id}/group_events/#{event.id}"
+
+        expect(response.status).to eq(200)
+        expect(event.reload.deleted_at).to eq(DateTime.current)
+      end
+    end
+
+    it 'returns the deleted group_event id' do
+      user = create :user
+      event = create :group_event, user: user
+
+      delete "/users/#{user.id}/group_events/#{event.id}"
+
+      expect(response.status).to eq(200)
+      expect(parsed_body).to eq({
+        'data' => { 'id' => event.id }
+      })
+    end
+  end
+
+  def parsed_body
     JSON.parse(response.body)
   end
 end

@@ -38,11 +38,48 @@ Please provide your solution as a rails app called exercise_YYMMDD_yourname, sen
    - delete event
 
  - The API has the following endpoints:
-    - [X] GET /events
-    - [X] POST /events
-    - [ ] GET /events/:id
-    - [X] PUT/PATCH /events/:id
-    - [ ] DELETE /events/:id
+    - [X] GET /users/:user_id/group_events
+    - [X] POST /users/:user_id/group_events
+    - [x] GET /users/:user_id/group_events/:id
+    - [X] PUT/PATCH /users/:user_id/group_events/:id
+    - [x] DELETE /users/:user_id/group_events/:id
+    - [x] POST /users/:user_id/group_events/:id/publish
+    - [x] DELETE /users/:user_id/group_events/:id/publish
 
- - I'm using pattern matching because it's elegant and this is a demo project. I would use it in production, yet.
+## Design decisions
+
+- The Ruby version is 2.7.1.
+ - The project using pattern matching because it's elegant and this is a demo project. I would use it in production, yet.
  - I'm creating a new migrations for a DB change to show production like migration practices.
+ - As a simpler approach I'm do not use serializer objects, but the AR models instead. For a bigger app I'd choose serializers.
+
+
+## Setup
+
+1. Install use a proper Ruby version 2.7.1.
+```bash
+  cd path-to-project
+```
+
+```bash
+  rbenv install
+```
+
+2. Install dependecies
+
+```
+bundle
+```
+
+
+3. Create/migrate DB
+
+```bash
+bundle exec rails db:migrate
+```
+
+4. Run tests
+
+```bash
+bundle exec rspec -fd
+```

@@ -5,68 +5,29 @@ class GroupEvent < ApplicationRecord
 
   enum status: { draft: 0, published: 1 }
 
+  default_scope { where(deleted_at: nil) }
+
   belongs_to :user
+
+  with_options on: :publishing do
+    validates :name,
+              :description,
+              :description_format,
+              :location,
+              :start_date,
+              :end_date,
+              :duration,
+              :status,
+              presence: true
+
+    validate :start_date_before_end_date
+  end
 
   SERALIZATION_ATTRIBUTES = {
     list: %i(id name status),
     member: %i(name status description description_format location start end duration),
+    delete: %i(id)
   }
-
-  # Events from the same day are with duration of 1 (day).
-  # For more info check out the specs.
-  def self.calculate_duration_fields(**duration_fields)
-    result = duration_fields.dup
-
-    case duration_fields.compact
-    in { start_date: start_date, end_date: end_date }
-      result.merge(duration: (end_date.to_date - start_date.to_date + 1).to_i)
-    in { start_date: start_date, duration: duration }
-      result.merge(end_date: start_date.to_date + (duration.to_i - 1).days)
-    in { end_date: end_date, duration: duration }
-      result.merge(start_date: end_date.to_date - (duration.to_i - 1).days)
-    else
-      result
-    end
-  end
-
-  def self.form_create(user, attributes = {})
-    attributes = attributes.to_h.symbolize_keys.compact
-    attributes[:start_date] = attributes[:start] if attributes[:start]
-    attributes[:end_date] = attributes[:end] if attributes[:end]
-
-    attributes.merge!(user_id: user.id, status: :draft)
-
-    attributes.merge!(
-      calculate_duration_fields(
-        start_date: attributes[:start],
-        end_date: attributes[:end],
-        duration: attributes[:duration],
-      )
-    )
-
-    create!(attributes.slice(*column_names.map(&:to_sym)))
-  end
-
-  def self.form_update(user, event_id, attributes)
-    event = find(event_id)
-
-    attributes = attributes.to_h.symbolize_keys.compact
-    attributes[:start_date] = attributes[:start] if attributes[:start]
-    attributes[:end_date] = attributes[:end] if attributes[:end]
-
-    event.assign_attributes(attributes.slice(*column_names.map(&:to_sym)))
-
-    event.assign_attributes(
-      calculate_duration_fields(
-        start_date: event.start_date,
-        end_date: event.end_date,
-        duration: event.duration,
-      )
-    )
-
-    event.save!
-    event
-  end
 
   def attributes
     hash = super
@@ -89,6 +50,15 @@ class GroupEvent < ApplicationRecord
     when 'end' then self['end_date']
     else
       super
+    end
+  end
+
+  private
+
+  def start_date_before_end_date
+    if (start_date && end_date) && start_date > end_date
+      errors.add(:start_date, "cannot be after 'end date'")
+      errors.add(:end_date, "cannot be before 'start date'")
     end
   end
 end
