@@ -29,7 +29,6 @@ Please provide your solution as a rails app called exercise_YYMMDD_yourname, sen
    - end
    - duration
    - status
-
  - For group event for any given 2 from the fields (start, end, and duration) we need to calculate the third field
  - The API have to support the following:
    - creating an event(assuming it will be always draft)
@@ -38,11 +37,12 @@ Please provide your solution as a rails app called exercise_YYMMDD_yourname, sen
    - pubishing an event + validations
    - delete event
 
-- The API has the following endpoints:
-   - [X] GET /events
-   - [X] POST /events
-   - [ ] GET /events/:id
-   - [X] PUT/PATCH /events/:id
-   - [ ] DELETE /events/:id
+ - The API has the following endpoints:
+    - [X] GET /events
+    - [X] POST /events
+    - [ ] GET /events/:id
+    - [X] PUT/PATCH /events/:id
+    - [ ] DELETE /events/:id
 
-
+ - I'm using pattern matching because it's elegant and this is a demo project. I would use it in production, yet.
+ - I'm creating a new migrations for a DB change to show production like migration practices.

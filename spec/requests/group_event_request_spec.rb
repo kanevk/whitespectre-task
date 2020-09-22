@@ -1,10 +1,24 @@
 require 'rails_helper'
 
 RSpec.describe "GroupEvents", type: :request do
-  describe 'POST /group_events' do
+
+  describe "GET users/:user_id/group_events" do
+    it 'fetches all group events for the user' do
+      user = create :user
+      event = create :group_event, user: user, name: 'name', status: :published
+      get "/users/#{user.id}/group_events"
+
+      expect(response.status).to eq(200)
+      expect(parsed_response).to match({
+        'data' => a_collection_containing_exactly({ 'id' => event.id, 'name' => 'name', 'status' => 'published' })
+      })
+    end
+  end
+
+  describe 'POST users/:user_id/group_events' do
     it 'creates an event' do
-      start_time = DateTime.current
-      end_time = DateTime.current + 2.days
+      start_date = Date.current
+      end_date = Date.current + 2.days
 
       user = create :user
       post "/users/#{user.id}/group_events", params: {
@@ -13,8 +27,8 @@ RSpec.describe "GroupEvents", type: :request do
         description: 'description',
         description_format: 'description_format',
         location: 'location',
-        start_time: start_time.to_s,
-        end_time: end_time.to_s,
+        start: start_date.to_s,
+        end: end_date.to_s,
         duration: 2,
       }
 
@@ -25,16 +39,16 @@ RSpec.describe "GroupEvents", type: :request do
           'description' => 'description',
           'description_format' => 'description_format',
           'location' => 'location',
-          'start_time' => start_time.to_s(:short),
-          'end_time' => end_time.to_s(:short),
-          'duration' => 2,
+          'start' => start_date.to_s,
+          'end' => end_date.to_s,
+          'duration' => 3,
         )
       })
     end
 
     it 'creates an event that is always draft' do
       user = create :user
-      post "/users/#{user.id}/group_events", params: { user_id: user.id }
+      post "/users/#{user.id}/group_events"
 
       expect(response.status).to eq(200)
       expect(parsed_response).to match({
@@ -43,29 +57,47 @@ RSpec.describe "GroupEvents", type: :request do
     end
 
     it 'fails creating an event when providing not existent user_id' do
-      post "/users/-1/group_events"
+      post "/users/missing_id/group_events"
 
       expect(response.status).to eq(404)
     end
   end
 
-  describe "GET /group_events" do
-    it 'fetches all group events for the user' do
+  describe "GET users/:user_id/group_events/:id" do
+    it 'fetches the event' do
       user = create :user
-      event = create :group_event, user: user, name: 'name', status: :published
-      get "/users/#{user.id}/group_events", params: { user_id: user.id }
+      event = create :group_event, user: user,
+                                   name: 'name',
+                                   description: 'description',
+                                   description_format: 'description_format',
+                                   status: :draft,
+                                   location: 'location',
+                                   start_date: Date.new(2020, 1, 1),
+                                   end_date: Date.new(2020, 1, 1),
+                                   duration: 1
+
+      get "/users/#{user.id}/group_events/#{event.id}"
 
       expect(response.status).to eq(200)
       expect(parsed_response).to match({
-        'data' => a_collection_containing_exactly({ 'id' => event.id, 'name' => 'name', 'status' => 'published' })
+        'data' => {
+          'name' => 'name',
+          'description' => 'description',
+          'description_format' => 'description_format',
+          'location' => 'location',
+          'start' => Date.new(2020, 1, 1).to_s,
+          'end' => Date.new(2020, 1, 1).to_s,
+          'duration' => 1,
+          'status' => 'draft'
+        }
       })
     end
   end
 
-  describe "PATCH /group_events/:id" do
+  describe "PATCH /users/:user_id/group_events/:id" do
     it 'fetches all group events for the user' do
-      start_time = DateTime.current
-      end_time = DateTime.current + 2.days
+      start_date = Date.current
+      end_date = Date.current
 
       user = create :user
       event = create :group_event, user: user,
@@ -80,10 +112,10 @@ RSpec.describe "GroupEvents", type: :request do
         'description' => 'new_description',
         'description_format' => 'new_description_format',
         'location' => 'new_location',
-        'start_time' => (start_time + 1.hour).to_s(:short),
-        'end_time' => (end_time + 1.hour).to_s(:short),
-        'duration' => 2,
-      }.freeze
+        'start' => (start_date + 1.day).to_s,
+        'end' => (end_date + 1.day).to_s,
+        'duration' => 1,
+      }
 
       patch "/users/#{user.id}/group_events/#{event.id}", params: updated_attributes
 
@@ -91,6 +123,13 @@ RSpec.describe "GroupEvents", type: :request do
       expect(parsed_response).to match({
         'data' => { 'status' => 'draft' , **updated_attributes }
       })
+    end
+
+    it 'fails updating an event when providing not existent event_id' do
+      user = create :user
+      patch "/users/#{user.id}/group_events/missing_id"
+
+      expect(response.status).to eq(404)
     end
   end
 
